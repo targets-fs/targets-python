@@ -24,7 +24,7 @@ import locale
 import tempfile
 import warnings
 
-from luigi import six
+from targets import six
 
 
 class FileWrapper(object):

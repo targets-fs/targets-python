@@ -26,7 +26,7 @@ import random
 import tempfile
 import logging
 import warnings
-from luigi import six
+from targets import six
 
 logger = logging.getLogger('luigi-interface')
 

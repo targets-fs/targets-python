@@ -42,14 +42,10 @@ try:
 except ImportError:
     from configparser import NoSectionError
 
-from luigi import six
-from luigi.six.moves import range
-
-from luigi import configuration
-from luigi.format import get_default_format
-from luigi.parameter import Parameter
-from luigi.target import FileAlreadyExists, FileSystem, FileSystemException, FileSystemTarget, AtomicLocalFile, MissingParentDirectory
-from luigi.task import ExternalTask
+from targets import six
+from targets.six.moves import range
+from targets.format import get_default_format
+from targets.target import FileAlreadyExists, FileSystem, FileSystemException, FileSystemTarget, AtomicLocalFile, MissingParentDirectory
 
 logger = logging.getLogger('luigi-interface')
 
@@ -733,44 +729,3 @@ class S3FlagTarget(S3Target):
     def exists(self):
         hadoopSemaphore = self.path + self.flag
         return self.fs.exists(hadoopSemaphore)
-
-
-class S3EmrTarget(S3FlagTarget):
-    """
-    Deprecated. Use :py:class:`S3FlagTarget`
-    """
-
-    def __init__(self, *args, **kwargs):
-        warnings.warn("S3EmrTarget is deprecated. Please use S3FlagTarget")
-        super(S3EmrTarget, self).__init__(*args, **kwargs)
-
-
-class S3PathTask(ExternalTask):
-    """
-    A external task that to require existence of a path in S3.
-    """
-    path = Parameter()
-
-    def output(self):
-        return S3Target(self.path)
-
-
-class S3EmrTask(ExternalTask):
-    """
-    An external task that requires the existence of EMR output in S3.
-    """
-    path = Parameter()
-
-    def output(self):
-        return S3EmrTarget(self.path)
-
-
-class S3FlagTask(ExternalTask):
-    """
-    An external task that requires the existence of EMR output in S3.
-    """
-    path = Parameter()
-    flag = Parameter(default=None)
-
-    def output(self):
-        return S3FlagTarget(self.path, flag=self.flag)

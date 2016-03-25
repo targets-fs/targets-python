@@ -26,8 +26,8 @@ import tempfile
 import io
 import warnings
 
-from luigi.format import FileWrapper, get_default_format
-from luigi.target import FileAlreadyExists, MissingParentDirectory, NotADirectory, FileSystem, FileSystemTarget, AtomicLocalFile
+from targets.format import FileWrapper, get_default_format
+from targets.target import FileAlreadyExists, MissingParentDirectory, NotADirectory, FileSystem, FileSystemTarget, AtomicLocalFile
 
 
 class atomic_file(AtomicLocalFile):
