@@ -1,0 +1,2 @@
+-r requirements/requirements_prod.txt
+-r requirements/requirements_dev.txt
