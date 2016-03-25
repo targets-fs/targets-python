@@ -27,7 +27,7 @@ deploy:
   distributions: sdist bdist_wheel
   user: shulman
   password:
-    secure: PLEASE_REPLACE_ME
+    secure: FPHZlQWLPVbambKFzAcSb+4/gV73EqhHe+K4cPhLrX/8H8Oezu0zfs/DZVoyAmDWqcC4ifUV6xdn2p0+YGG3QFOQ3Yg01uO7T5qUkUN+cMm1cmQmEliQa2AkU1+BCMK1YsnHvvWKnl2GiYpEFwDkSsPrqjWlA6Ui4fuDTUnQNEBmdJUxvk88q9F333iBD8MDRD1T9AzME8/Jfi+Nx+JbtZ5fT/dT3zUtQ3IM+hulOBXv5YU4/yfSKn5b51h3Wr0vbRv5Iuq8PY1p9jZOaIsPV3TF5phKiQFjwjjMK91KSrM9umbEVLaWZVBZIBNZQ3WJ7h55b1rTRx1SI3mUr2ulUJJEmPioznuQlZ2y7/XvAvYa8rWZ6XRHm74a6i8kGB+bE7OC4uCEqAffkKSj6IRUU20bNTTKSrPFn9Vmbqagzv5wUzwXvHDizV1A3U7I0zOzqZ6SfwgXLxUsN4MSVvwEcHbtx8EL+LSL7YrvCUH7B1RHmhaV1ROIipWUJDwdgn8MiEi5OsobX+XFXM1iKSEbHq9Krnpo7/zG7DMBEiBhdCC3D9wa42TKsPYlSrIANdkXnsvW06BCKawQVKq6X9tb51iqbc1uT/rVDM1R1QlBxxRf0oWkFzLSOTzVlD+/eAB28SZ/f2obk3s7VxVzk7aaA7lQM0aqKmmg0lVl2cI7WCQ=
   on:
     tags: true
     repo: targets-fs/targets-python
