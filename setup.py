@@ -24,7 +24,7 @@ test_requirements = [
 
 setup(
     name='targets',
-    version='0.1.0',
+    version='0.1.1',
     description="Targets is the simplified universal file system",
     long_description=readme + '\n\n' + history,
     author="targets-fs",
