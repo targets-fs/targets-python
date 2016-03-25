@@ -24,11 +24,12 @@ from __future__ import division
 
 import datetime
 import itertools
-import logging
 import os
 import os.path
 import time
 from multiprocessing.pool import ThreadPool
+
+from targets.s3.atomic import AtomicS3File, ReadableS3File
 
 try:
     from urlparse import urlsplit
@@ -40,14 +41,14 @@ try:
 except ImportError:
     from configparser import NoSectionError
 
-from targets import six
 from targets.six.moves import range
 from targets.format import get_default_format
-from targets.core.target import FileAlreadyExists, FileSystem, FileSystemTarget, MissingParentDirectory
-from targets.core.atomic import AtomicLocalFile
-from targets.core.errors import FileSystemException, FileAlreadyExists, MissingParentDirectory
+from targets.core.target import FileSystem, FileSystemTarget
+from targets.core.errors import FileAlreadyExists, MissingParentDirectory, InvalidDeleteException, FileNotFoundException
 
-logger = logging.getLogger('luigi-interface')
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # two different ways of marking a directory
@@ -56,12 +57,22 @@ S3_DIRECTORY_MARKER_SUFFIX_0 = '_$folder$'
 S3_DIRECTORY_MARKER_SUFFIX_1 = '/'
 
 
-class InvalidDeleteException(FileSystemException):
-    pass
-
-
-class FileNotFoundException(FileSystemException):
-    pass
+def get_s3_config(key=None):
+    # try:
+    #     config = dict(configuration.get_config().items('s3'))
+    # except NoSectionError:
+    #     return {}
+    # # So what ports etc can be read without us having to specify all dtypes
+    # for k, v in six.iteritems(config):
+    #     try:
+    #         config[k] = int(v)
+    #     except ValueError:
+    #         pass
+    config = {}
+    # TODO: implemenet s3 factory with configuration provided
+    if key:
+        return config.get(key)
+    return config
 
 
 class S3Client(FileSystem):
@@ -467,12 +478,10 @@ class S3Client(FileSystem):
         key_path_len = len(key_path)
         for item in s3_bucket.list(prefix=key_path):
             last_modified_date = time.strptime(item.last_modified, "%Y-%m-%dT%H:%M:%S.%fZ")
-            if (
-                    (not start_time and not end_time) or  # neither are defined, list all
+            if ((not start_time and not end_time) or  # neither are defined, list all
                     (start_time and not end_time and start_time < last_modified_date) or  # start defined, after start
                     (not start_time and end_time and last_modified_date < end_time) or  # end defined, prior to end
-                    (start_time and end_time and start_time < last_modified_date < end_time)  # both defined, between
-               ):
+                    (start_time and end_time and start_time < last_modified_date < end_time)):  # both defined, between
                 yield self._add_path_delimiter(path) + item.key[key_path_len:]
 
     def list(self, path, start_time=None, end_time=None):  # backwards compat
@@ -525,19 +534,7 @@ class S3Client(FileSystem):
         return self.put_string("", self._add_path_delimiter(path))
 
     def _get_s3_config(self, key=None):
-        try:
-            config = dict(configuration.get_config().items('s3'))
-        except NoSectionError:
-            return {}
-        # So what ports etc can be read without us having to specify all dtypes
-        for k, v in six.iteritems(config):
-            try:
-                config[k] = int(v)
-            except ValueError:
-                pass
-        if key:
-            return config.get(key)
-        return config
+        return get_s3_config(key=key)
 
     def _path_to_bucket_and_key(self, path):
         (scheme, netloc, path, query, fragment) = urlsplit(path)
@@ -549,103 +546,6 @@ class S3Client(FileSystem):
 
     def _add_path_delimiter(self, key):
         return key if key[-1:] == '/' or key == '' else key + '/'
-
-
-class AtomicS3File(AtomicLocalFile):
-    """
-    An S3 file that writes to a temp file and put to S3 on close.
-
-    :param kwargs: Keyword arguments are passed to the boto function `initiate_multipart_upload`
-    """
-
-    def __init__(self, path, s3_client, **kwargs):
-        self.s3_client = s3_client
-        super(AtomicS3File, self).__init__(path)
-        self.s3_options = kwargs
-
-    def move_to_final_destination(self):
-        self.s3_client.put_multipart(self.tmp_path, self.path, **self.s3_options)
-
-
-class ReadableS3File(object):
-    def __init__(self, s3_key):
-        self.s3_key = s3_key
-        self.buffer = []
-        self.closed = False
-        self.finished = False
-
-    def read(self, size=0):
-        f = self.s3_key.read(size=size)
-
-        # boto will loop on the key forever and it's not what is expected by
-        # the python io interface
-        # boto/boto#2805
-        if f == b'':
-            self.finished = True
-        if self.finished:
-            return b''
-
-        return f
-
-    def close(self):
-        self.s3_key.close()
-        self.closed = True
-
-    def __del__(self):
-        self.close()
-
-    def __exit__(self, exc_type, exc, traceback):
-        self.close()
-
-    def __enter__(self):
-        return self
-
-    def _add_to_buffer(self, line):
-        self.buffer.append(line)
-
-    def _flush_buffer(self):
-        output = b''.join(self.buffer)
-        self.buffer = []
-        return output
-
-    def readable(self):
-        return True
-
-    def writable(self):
-        return False
-
-    def seekable(self):
-        return False
-
-    def __iter__(self):
-        key_iter = self.s3_key.__iter__()
-
-        has_next = True
-        while has_next:
-            try:
-                # grab the next chunk
-                chunk = next(key_iter)
-
-                # split on newlines, preserving the newline
-                for line in chunk.splitlines(True):
-
-                    if not line.endswith(os.linesep):
-                        # no newline, so store in buffer
-                        self._add_to_buffer(line)
-                    else:
-                        # newline found, send it out
-                        if self.buffer:
-                            self._add_to_buffer(line)
-                            yield self._flush_buffer()
-                        else:
-                            yield line
-            except StopIteration:
-                # send out anything we have left in the buffer
-                output = self._flush_buffer()
-                if output:
-                    yield output
-                has_next = False
-        self.close()
 
 
 class S3Target(FileSystemTarget):

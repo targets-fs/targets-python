@@ -24,12 +24,12 @@ import os
 import random
 import shutil
 import tempfile
-import warnings
 
-from targets.core.target import MissingParentDirectory, NotADirectory, FileSystem, FileSystemTarget
 from targets.core.atomic import AtomicLocalFile
 from targets.core.errors import FileAlreadyExists, MissingParentDirectory, NotADirectory
-from targets.format import FileWrapper, get_default_format
+from targets.core.target import FileSystem, FileSystemTarget
+from targets.format import get_default_format
+from targets.format.wrapped import FileWrapper
 
 
 class atomic_file(AtomicLocalFile):
@@ -158,9 +158,3 @@ class LocalTarget(FileSystemTarget):
     def __del__(self):
         if self.is_tmp and self.exists():
             self.remove()
-
-
-class File(LocalTarget):
-    def __init__(self, *args, **kwargs):
-        warnings.warn("File has been renamed LocalTarget", DeprecationWarning, stacklevel=2)
-        super(File, self).__init__(*args, **kwargs)

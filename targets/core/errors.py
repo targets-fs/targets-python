@@ -16,7 +16,7 @@
 #
 
 
-class TargetsException(Excepton):
+class TargetsException(Exception):
     """
         Base class for generic package related exceptions.
         """
@@ -51,4 +51,12 @@ class NotADirectory(FileSystemException):
     Raised when a file system operation can't be performed because
     an expected directory is actually a file.
     """
+    pass
+
+
+class InvalidDeleteException(FileSystemException):
+    pass
+
+
+class FileNotFoundException(FileSystemException):
     pass

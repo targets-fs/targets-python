@@ -19,18 +19,17 @@ from __future__ import print_function
 import os
 import sys
 import tempfile
-
-from target_test import FileSystemTargetTestMixin
-from helpers import with_config, unittest
+import unittest
 
 from boto.exception import S3ResponseError
 from boto.s3 import key
+from targets.s3 import S3Client, S3Target
+from targets.core.errors import MissingParentDirectory, InvalidDeleteException, FileNotFoundException
 from moto import mock_s3
 from moto import mock_sts
 
-from luigi import configuration
-from luigi.s3 import FileNotFoundException, InvalidDeleteException, S3Client, S3Target
-from luigi.target import MissingParentDirectory
+from tests.core.test_target import FileSystemTargetTestMixin
+from tests.utils_test import with_config
 
 if (3, 4, 0) <= sys.version_info[:3] < (3, 4, 3):
     # spulec/moto#308
@@ -134,6 +133,7 @@ class TestS3Client(unittest.TestCase):
         self.addCleanup(self.mock_s3.stop)
         self.addCleanup(self.mock_sts.stop)
 
+    @with_config({})
     def test_init_with_environment_variables(self):
         os.environ['AWS_ACCESS_KEY_ID'] = 'foo'
         os.environ['AWS_SECRET_ACCESS_KEY'] = 'bar'
@@ -536,5 +536,3 @@ class TestS3Client(unittest.TestCase):
         self.assertEqual(file_size, key_size)
         tmp_file.close()
 
-if __name__ == '__main__':
-    unittest.main()

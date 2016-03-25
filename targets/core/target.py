@@ -26,7 +26,7 @@ import warnings
 from targets import six
 from targets.core.errors import FileAlreadyExists
 
-logger = logging.getLogger('luigi-interface')
+logger = logging.getLogger(__name__)
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -216,5 +216,3 @@ class FileSystemTarget(Target):
     def _touchz(self):
         with self.open('w'):
             pass
-
-
