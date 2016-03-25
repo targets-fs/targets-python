@@ -27,7 +27,6 @@ import itertools
 import logging
 import os
 import os.path
-
 import time
 from multiprocessing.pool import ThreadPool
 
@@ -35,7 +34,6 @@ try:
     from urlparse import urlsplit
 except ImportError:
     from urllib.parse import urlsplit
-import warnings
 
 try:
     from ConfigParser import NoSectionError
@@ -45,7 +43,9 @@ except ImportError:
 from targets import six
 from targets.six.moves import range
 from targets.format import get_default_format
-from targets.target import FileAlreadyExists, FileSystem, FileSystemException, FileSystemTarget, AtomicLocalFile, MissingParentDirectory
+from targets.core.target import FileAlreadyExists, FileSystem, FileSystemTarget, MissingParentDirectory
+from targets.core.atomic import AtomicLocalFile
+from targets.core.errors import FileSystemException, FileAlreadyExists, MissingParentDirectory
 
 logger = logging.getLogger('luigi-interface')
 
@@ -72,7 +72,6 @@ class S3Client(FileSystem):
     def __init__(self, aws_access_key_id=None, aws_secret_access_key=None,
                  **kwargs):
         # only import boto when needed to allow top-lvl s3 module import
-        import boto
         import boto.s3.connection
         from boto.s3.key import Key
 

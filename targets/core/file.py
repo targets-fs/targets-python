@@ -19,15 +19,17 @@
 :class:`LocalTarget` provides a concrete implementation of a :py:class:`~luigi.target.Target` class that uses files on the local file system
 """
 
+import io
 import os
 import random
 import shutil
 import tempfile
-import io
 import warnings
 
+from targets.core.target import MissingParentDirectory, NotADirectory, FileSystem, FileSystemTarget
+from targets.core.atomic import AtomicLocalFile
+from targets.core.errors import FileAlreadyExists, MissingParentDirectory, NotADirectory
 from targets.format import FileWrapper, get_default_format
-from targets.target import FileAlreadyExists, MissingParentDirectory, NotADirectory, FileSystem, FileSystemTarget, AtomicLocalFile
 
 
 class atomic_file(AtomicLocalFile):
