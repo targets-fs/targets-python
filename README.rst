@@ -18,6 +18,19 @@ Targets is the simplified universal file system
 * Free software: ISC license
 * Documentation: https://targets.readthedocs.org.
 
+
+Description
+-----------
+Most of the initial code is contributed by luigi project
+Started as discussion: https://groups.google.com/forum/#!topic/luigi-user/ZLGJCj0dBJI
+
+...
+As a Luigi user for the past couple of years, I have found out that I am using the concept of Luigi targets in most of the projects I was working on. Transparent file system, atomic write/reads, formats is a great functionality, and is highly missing from the global Python eco system. Moreover, going over multiple workflow management project implementations(mrjob,airflow) I have always been surprised to see yet another implementation of the abstraction over fs/ssh/s3/ftp/etc all over again.
+
+As a developer, and especially as a Python developer, I want to focus on implementation of my business requirements, instead of working with low level filesystem APIs. The standard "open" function is simply not strong enough.
+...
+
+
 Features
 --------
 
