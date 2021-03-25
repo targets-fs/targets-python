@@ -15,7 +15,7 @@ boto==2.39.0
 moto==0.4.23
 
 Sphinx==1.3.3
-PyYAML==3.11
+PyYAML==5.4
 
 # required only for travis setup, fails on python35
 # cryptography==1.0.1
